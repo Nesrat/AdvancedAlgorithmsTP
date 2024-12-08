@@ -22,7 +22,7 @@ from complexity.visualizer import (
 from collections import namedtuple
 
 # Define metrics namedtuple
-Metrics = namedtuple('Metrics', ['n', 'comparison_count'])
+Metrics = namedtuple('Metrics', ['n', 'comparison_count', 'time', 'memory'])
 
 # Set up data generators
 factory = DataGeneratorFactory()
@@ -54,7 +54,7 @@ def sequential_search(arr, target):
         if arr[i] == target:
             break
     
-    return Metrics(n, comparisons)
+    return Metrics(n, comparisons, None, None)
 
 def advanced_sequential_search(arr, target):
     comparisons = 0
@@ -69,7 +69,7 @@ def advanced_sequential_search(arr, target):
         if arr[i] > target:
             break
     
-    return Metrics(n, comparisons)
+    return Metrics(n, comparisons, None, None)
 
 def binary_search(arr, target):
     comparisons = 0
@@ -89,7 +89,7 @@ def binary_search(arr, target):
             end = mid - 1
         comparisons += 1
     
-    return Metrics(n, comparisons)
+    return Metrics(n, comparisons, None, None)
 
 # Algorithms to benchmark
 search_algorithms = [
@@ -131,7 +131,9 @@ with tqdm(total=total_experiments, desc="Running experiments") as pbar:
                         'data_type': 'random',
                         'size': length,
                         'experiment': exp,
-                        **metrics
+                        'comparisons': metrics.comparison_count,
+                        'time': metrics.time,
+                        'memory': metrics.memory
                     })
                     pbar.update(1)
                 
@@ -143,7 +145,9 @@ with tqdm(total=total_experiments, desc="Running experiments") as pbar:
                         'data_type': 'sorted',
                         'size': length,
                         'experiment': exp,
-                        **metrics
+                        'comparisons': metrics.comparison_count,
+                        'time': metrics.time,
+                        'memory': metrics.memory
                     })
                     pbar.update(1)
 
@@ -163,7 +167,7 @@ df['memory'] = pd.to_numeric(df['memory'], errors='coerce')
 grouped = df.groupby(['algorithm', 'data_type', 'size']).agg({
     'time': 'mean',
     'memory': 'mean',
-    'comparison_count': 'mean'
+    'comparisons': 'mean'
 }).reset_index()
 
 # Save both raw and grouped results for later analysis
